@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 public class RSocketShellClient {
 
 	private RSocketRequester rSocketRequester;
+	private RSocketRequester.Builder builder;
 
 	private Disposable disposable;
 	private Disposable disposable2;
@@ -24,7 +25,8 @@ public class RSocketShellClient {
 	private AtomicLong counter = new AtomicLong();
 
 	public RSocketShellClient(RSocketRequester.Builder builder) {
-		rSocketRequester = builder.connectTcp("localhost", 7000).block();
+		this.builder = builder;
+		 rSocketRequester = builder.connectTcp("localhost", 7000).block();
 		log.info("rSocketRequester", rSocketRequester);
 	}
 
@@ -73,6 +75,11 @@ public class RSocketShellClient {
 
 		this.disposable2 = this.rSocketRequester.route("channel").data(settings).retrieveFlux(Message.class)
 				.subscribe(message -> log.info("Recieved: {} (Type s to stop)", message));
+	}
+
+	@ShellMethod("Reconnect to server")
+	public void reconnect() {
+		rSocketRequester = builder.connectTcp("localhost", 7000).block();
 	}
 
 }
